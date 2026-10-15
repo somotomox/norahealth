@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nora Email Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: one email at a time, current and new version side by side, picker above.
+   Built by build.js from index.template.html. Edit the template, not index.html. */
+:root{
+  --bg:#F4E7E1; --surface:#FFFFFF; --ink:#0D060C; --body:#4A4246; --muted:#7A6F72;
+  --line:#E6D5CB; --accent:#A8651F; --accent-ink:#FFFFFF; --chip:#F9F1EC;
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --text:"DM Sans", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1C1418; --surface:#271D22; --ink:#F6EEF0; --body:#D8CCD0; --muted:#A8999F;
+  --line:#3D2E35; --accent:#E0A35A; --accent-ink:#1C1418; --chip:#33262C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1418; --surface:#271D22; --ink:#F6EEF0; --body:#D8CCD0; --muted:#A8999F;
+  --line:#3D2E35; --accent:#E0A35A; --accent-ink:#1C1418; --chip:#33262C; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--body);font-family:var(--text);font-size:15px;line-height:1.55;padding:0 16px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px;max-width:68ch}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(30px,4.4vw,44px);line-height:1.1;color:var(--ink);margin:0;text-wrap:balance}
+header p{margin:0}
+.picker{display:flex;flex-wrap:wrap;gap:8px}
+.picker button{font:inherit;font-size:14px;font-weight:600;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.picker button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.picker button:focus-visible,.seg button:focus-visible,.files a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.summary{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 24px}
+.summary h2{font-family:var(--display);font-weight:600;font-size:24px;color:var(--ink);margin:0 0 4px}
+.summary .when{margin:0;color:var(--muted)}
+.summary .subject{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.summary .subject strong{color:var(--ink);font-weight:600}
+.summary ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.pane{display:flex;flex-direction:column;gap:12px;min-width:0}
+.pane-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;min-height:38px}
+.tag{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tag.new{color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{font:inherit;font-size:13px;font-weight:600;border:0;background:transparent;color:var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--chip);color:var(--ink)}
+.shot{background:var(--chip);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;justify-content:center}
+.shot img{display:block;width:100%;height:auto;border-radius:8px}
+.shot iframe{display:block;width:100%;height:600px;border:0;border-radius:8px;background:#F4E7E1}
+.shot.mobile iframe{width:375px;max-width:100%}
+.foot{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:13px;max-width:72ch}
+.foot p{margin:0}
+.foot strong{color:var(--ink)}
+.foot code{font-size:12px;color:var(--ink)}
+@media (max-width:820px){.summary,.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Nora Health patient emails</span>
+    <h1>New look for every patient email</h1>
+    <p>Seven emails now share one design: the Nora Health logo, a clean card, clear buttons, and a footer with WhatsApp, website and email links. Pick an email to compare the current version with the new one. The wording you supplied is unchanged.</p>
+  </header>
+
+  <nav class="picker" role="tablist" aria-label="Choose an email" id="picker"></nav>
+
+  <section class="summary" aria-live="polite">
+    <div><h2 id="name"></h2><p class="when" id="when"></p><p class="subject">Subject: <strong id="subject"></strong></p></div>
+    <ul id="notes"></ul>
+  </section>
+
+  <section class="compare">
+    <div class="pane">
+      <div class="pane-head"><span class="tag">Current email</span></div>
+      <div class="shot"><img id="before" alt="Current version of this email"></div>
+    </div>
+    <div class="pane">
+      <div class="pane-head">
+        <span class="tag new">New design</span>
+        <div class="seg" role="group" aria-label="Screen size">
+          <button type="button" id="v-desktop" aria-pressed="true">Desktop</button>
+          <button type="button" id="v-mobile" aria-pressed="false">Phone</button>
+        </div>
+      </div>
+      <div class="shot" id="after-wrap"><iframe id="after" title="New design of this email"></iframe></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p><strong>Live HTML.</strong> The new design on the right is the real email, not a picture. The files to send are in <code>templates/</code>, one per email, with <code>{{tokens}}</code> for patient data.</p>
+    <p><strong>Example data.</strong> Names, dates, addresses and tracking numbers in these previews are samples (Jane Doe, 15 October 2026, MZ 5607 9721 0GB), not real patients.</p>
+    <p>Previews are rendered in your browser. Gmail, Outlook and Apple Mail can differ slightly; a real test email will be checked after approval.</p>
+  </div>
+</div>
+
+<script>
+const EMAILS = /*EMAILS*/[];
+let current = 0, view = "desktop";
+const $ = (id) => document.getElementById(id);
+const frame = $("after");
+
+function fit(){
+  try {
+    const doc = frame.contentDocument;
+    if (doc && doc.documentElement) frame.style.height = doc.documentElement.scrollHeight + "px";
+  } catch (e) {}
+}
+frame.addEventListener("load", () => {
+  fit();
+  try {
+    const doc = frame.contentDocument;
+    if (doc.fonts) doc.fonts.ready.then(fit);
+    new ResizeObserver(fit).observe(doc.body);
+    doc.querySelectorAll("img").forEach((img) => img.addEventListener("load", fit));
+  } catch (e) {}
+});
+
+function render(){
+  const e = EMAILS[current];
+  $("name").textContent = e.name;
+  $("when").textContent = e.when;
+  $("subject").textContent = e.subject;
+  $("notes").replaceChildren(...e.notes.map(t => { const li = document.createElement("li"); li.textContent = t; return li; }));
+  $("before").src = e.before;
+  if (frame.dataset.key !== e.key) { frame.dataset.key = e.key; frame.style.height = "600px"; frame.srcdoc = e.html; }
+  $("after-wrap").classList.toggle("mobile", view === "mobile");
+  [...$("picker").children].forEach((b, i) => b.setAttribute("aria-selected", String(i === current)));
+  $("v-desktop").setAttribute("aria-pressed", String(view === "desktop"));
+  $("v-mobile").setAttribute("aria-pressed", String(view === "mobile"));
+  requestAnimationFrame(fit);
+}
+EMAILS.forEach((e, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.setAttribute("role", "tab"); b.id = "tab-" + e.key; b.textContent = e.name;
+  b.addEventListener("click", () => { current = i; history.replaceState(null, "", "#" + e.key); render(); });
+  $("picker").appendChild(b);
+});
+$("v-desktop").addEventListener("click", () => { view = "desktop"; render(); });
+$("v-mobile").addEventListener("click", () => { view = "mobile"; render(); });
+const start = EMAILS.findIndex(e => "#" + e.key === location.hash);
+if (start >= 0) current = start;
+render();
+</script>
+</body>
+</html>
